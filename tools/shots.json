@@ -1,4 +1,3 @@
 [
-  { "js": "localStorage.setItem('claudeGames.muted','1'); localStorage.setItem('claudeGames.lang','en'); game.autoPause = false; 'muted'" },
-  { "js": "game.home(); 'home'", "wait": 1500, "shot": "screenshot" }
+  { "js": "localStorage.setItem('claudeGames.muted','1'); localStorage.setItem('claudeGames.lang','en'); game.autoPause = false; game.home(); 'home'", "wait": 2000, "shot": "screenshot" }
 ]

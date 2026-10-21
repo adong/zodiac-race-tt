@@ -98,7 +98,7 @@
     });
     Kit.sound.onMute((m) => { $('muteBtn').textContent = m ? '🔇' : '🔊'; });
     $('muteBtn').textContent = Kit.sound.isMuted() ? '🔇' : '🔊';
-    Kit.lang.onChange(() => { W.relabel(); refreshHome(); if (overlay === 'finder') drawFinder(); if (overlay === 'story') drawStory(); if (state === 'results') drawResults(); });
+    Kit.lang.onChange(() => { W.relabel(); refreshHome(); drawFinder(); if (overlay === 'story') drawStory(); if (state === 'results') drawResults(); });
     goHome();
     $('loading').classList.add('hidden');
     setTimeout(() => $('loading').remove(), 500);
@@ -416,6 +416,7 @@
     $('lSlots').innerHTML = Z.ANIMALS.map((a, i) => `<div class="slot${i === 0 ? ' next' : ''}"><b>${i + 1}</b></div>`).join('');
     const tiles = $('lTiles');
     tiles.innerHTML = '';
+    tiles.style.display = '';
     lq.order.forEach((i) => {
       const a = Z.ANIMALS[i];
       const b = document.createElement('button');
@@ -471,6 +472,7 @@
     const nb = !prev || t < prev;
     if (nb) { save.lineup[who] = t; persist(); }
     $('lLine').textContent = `🎉 YOU KNOW THE ZODIAC! ${fmt(t)}${nb ? ' · NEW BEST!' : ''}`;
+    $('lTiles').style.display = 'none';
     $('lAgain').classList.remove('hidden');
     ZR.sfx.finish(true);
     confetti(120);
@@ -690,7 +692,7 @@
     } else {
       // after the race: the animals walk on into the courtyard, the winner celebrates, then the results
       for (const R of race.racers) {
-        const stop = RACE.L + 9 + (R.lane % 3) * 2.5;
+        const stop = RACE.L + 4 + (R.lane % 3) * 2;
         if (R.s < stop) { R.v = Math.max(R.v * Math.exp(-0.5 * h), 2.5); R.s = Math.min(stop, R.s + R.v * h); }
         else R.v = 0;
       }
@@ -906,8 +908,9 @@
     // who walks up to the Jade Emperor: the brothers, and the winner if it's someone else
     const heroes = race.players.map((R) => R.i);
     if (!heroes.includes(winner.i)) heroes.unshift(winner.i);
-    // beside the Jade Emperor's throne (x = 0), so he's in the picture with them
-    const spots = heroes.map((i, n) => ({ x: 4 + n * 3.4, z: -(RACE.L + 19) }));
+    heroes.sort((a, b) => race.racers[a].place - race.racers[b].place);
+    // beside the Jade Emperor's throne (x = 0), the winner nearest, so he's in the picture with them
+    const spots = heroes.map((i, n) => ({ x: 4 + n * 3.4, z: -(RACE.L + 21) }));
     celebrate = { t: 0, winner, heroes, spots, walk: 0, cheered: false };
     $('pads').classList.add('hidden');
     $('buddyBtn').classList.add('hidden');
@@ -987,16 +990,16 @@
       // from just up the meadow, looking back at the animals on the start line
       const xs = players.map((id) => W.laneX(Z.byId[save.animal[id]].order - 1));
       const mid = xs.reduce((a, b) => a + b, 0) / xs.length;
-      homeCam.position.set(mid - 1, 4.2, -13);
-      homeCam.lookAt(mid, 1.6, 0);
+      homeCam.position.set(mid - 1, 3.6, -13);
+      homeCam.lookAt(mid, 2.0, 0);
       return;
     }
     if ((state === 'finish' || state === 'results') && celebrate && celebrate.walk > 0.15) {
       // in the courtyard, the Jade Emperor behind the heroes
       const k = celebrate.camSet ? 1 - Math.exp(-2.5 * dt) : 1;
       celebrate.camSet = true;
-      endCam.position.lerp(tmpV.set(5, 4.6, -(RACE.L + 5)), k);
-      endCam.lookAt(2.5, 2.8, -(RACE.L + 24));
+      endCam.position.lerp(tmpV.set(5, 4.4, -(RACE.L + 11)), k);
+      endCam.lookAt(2.5, 2.6, -(RACE.L + 26));
       if (!celebrate.laidOut) { celebrate.laidOut = true; layout(); }
       return;
     }
@@ -1006,7 +1009,10 @@
       const sh = shake[pl] || 0;
       shake[pl] = Math.max(0, sh - dt);
       const narrow = views[pl] && views[pl].w / Math.max(1, views[pl].h) < 1;
-      const x = W.laneX(R.lane) + W.spotX(R.x) * 0.5;
+      // follow the animal itself (the rat on the ox's back is a lane over), smoothly
+      const ax = A3[R.animal].root.position.x;
+      c.userData.x = c.userData.x === undefined || state === 'count' ? ax : c.userData.x + (ax - c.userData.x) * Math.min(1, dt * 4);
+      const x = W.laneX(R.lane) + (c.userData.x - W.laneX(R.lane)) * 0.6;
       const lift = R.act && (R.act.kind === 'fly' || R.act.kind === 'flap') ? 1.5 : R.cloud && R.cloud.on ? 1 : 0;
       const back = narrow ? 11 : 9;
       c.position.set(x + Math.sin(performance.now() * 0.05) * sh * 0.4, W.groundY(R.s) + (narrow ? 6.5 : 5.2) + lift, -R.s + back);
@@ -1130,7 +1136,7 @@
     if (players.length === 2) {
       const size = Math.round(Math.max(58, Math.min(80, vmin * 0.11)));
       const wide = views.length === 2 && views[1].x > 0;
-      Object.assign($('fiveBtn').style, wide ? { left: `${Wd / 2 - size / 2}px`, top: `${Ht * 0.3}px` } : { left: `${Wd - size - 14}px`, top: `${Ht / 2 - size / 2}px` }, { width: `${size}px`, height: `${size}px` });
+      Object.assign($('fiveBtn').style, wide ? { left: `${Wd / 2 - size / 2}px`, top: `${Ht * 0.3}px` } : { left: `${Wd / 2 - size / 2}px`, top: `${Ht / 2 - size / 2}px` }, { width: `${size}px`, height: `${size}px` });
     }
   }
 

@@ -145,7 +145,7 @@
     const wins = { perfect: 0, teddy: 0, idle: 0 };
     let n = 0;
     for (const a of ANIMALS()) {
-      for (const seed of [1, 2, 3]) {
+      for (const seed of [1, 2, 3, 4, 5]) {
         n++;
         for (const pilot in wins) {
           const r = R().simulate({ players: [{ animal: a.id, who: 'teddy', level: 'normal', pilot }], seed, tweak });

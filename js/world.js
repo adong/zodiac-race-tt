@@ -444,6 +444,7 @@
   }
 
   function render(views) {
+    if ((window.innerWidth || 1) !== W || (window.innerHeight || 1) !== H) resize(); // a turned iPad, before its resize event
     for (const v of views) {
       const y = H - v.y - v.h;
       renderer.setViewport(v.x, y, v.w, v.h);

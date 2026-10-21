@@ -89,13 +89,13 @@
     let headParent = body, hy = by + h * 0.35, hz = -len / 2 - hd * 0.3;
     if (o.neck) {
       const neck = group(body, 0, by + h * 0.25, -len / 2 + 0.15);
-      neck.rotation.x = 0.6;
+      neck.rotation.x = -0.6; // leaning forward, toward the head
       box(0.42, 0.95, 0.48, o.color, 0, 0.42, -0.05, neck);
       if (o.mane) box(0.14, 1.0, 0.2, o.mane, 0, 0.5, 0.24, neck);
-      headParent = neck; hy = 0.9; hz = -0.25;
+      headParent = neck; hy = 0.9; hz = -0.3;
     }
     const head = group(headParent, 0, hy, hz);
-    if (o.neck) head.rotation.x = -0.6;
+    if (o.neck) { head.rotation.x = 0.6; head.userData.rx = 0.6; }
     box(hw, hh, hd, o.face && !o.snout ? o.color : o.color, 0, 0, 0, head);
     const zf = -hd / 2 - 0.01;
     if (o.face) {
