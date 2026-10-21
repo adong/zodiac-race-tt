@@ -7,7 +7,7 @@
      step(race, dt)                       60 steps a second
      steer(race, i, dir) / jump(race, i) / power(race, i) / buddy(race, i) / highFive(race)
      simulate({ players: [{ animal, who, level, pilot }], seed, tweak })   a whole race with pretend players
-   race.events collects what happened this step (bonk, peach, power, ride, leap, finish...) for the page to show. */
+   race.events collects what happened (bonk, peach, power, ride, leap, finish...) for the page to show; the page clears it. */
 (function () {
   'use strict';
   const ZR = (window.ZR = window.ZR || {});
@@ -295,8 +295,9 @@
     if (log && log.s - R.s < 3) jump(race, R.i);
   }
 
+  // race.events piles up until whoever runs the race clears it (the page, after showing them; simulate(), every step),
+  // so the events of a button press between two steps aren't lost
   function step(race, dt) {
-    race.events.length = 0;
     if (race.done) return;
     race.t += dt;
     if (race.t < 0) return;
@@ -470,7 +471,7 @@
     const race = create(o);
     const dt = 1 / 60;
     let n = 0;
-    while (!race.done && n++ < (PHYS.cap + 10) * 60) step(race, dt);
+    while (!race.done && n++ < (PHYS.cap + 10) * 60) { race.events.length = 0; step(race, dt); }
     return race;
   }
 
